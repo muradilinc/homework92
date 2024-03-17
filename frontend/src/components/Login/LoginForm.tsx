@@ -37,12 +37,12 @@ const LoginForm: React.FC<Props> = ({userExist, sendUser}) => {
   };
 
   return (
-    <div className="flex justify-center items-center h-[80vh]">
+    <div className="flex justify-center items-center h-[100vh]">
       <div className="bg-[#FAF8F4] p-[20px] box-border w-[45%] rounded-[8px] flex flex-col gap-y-[30px]">
         <h2 className="text-center text-5xl font-bold">Sign in</h2>
         <form onSubmit={sendFormHandler} className="flex flex-col gap-y-3">
           <input
-            className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-white text-sm rounded-lg focus:ring-white focus:border-white block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
+            className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-black text-sm rounded-lg focus:ring-white focus:border-white block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
             value={state.email}
             onChange={changeField}
             name="email"
@@ -50,7 +50,7 @@ const LoginForm: React.FC<Props> = ({userExist, sendUser}) => {
             required
           />
           <input
-            className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-white text-sm rounded-lg focus:ring-white focus:border-white block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
+            className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-black text-sm rounded-lg focus:ring-white focus:border-white block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
             value={state.password}
             onChange={changeField}
             name="password"

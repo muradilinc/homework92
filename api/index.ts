@@ -21,7 +21,7 @@ const activeConnection: ActiveConnection = {
 };
 
 chatRouter.ws('/chat', async (ws, req) => {
-  ws.send(JSON.stringify({type:'WELCOME', payload: 'You have connected to the chat!'}));
+  ws.send(JSON.stringify({type: 'WELCOME', payload: 'You have connected to the chat!'}));
   ws.on('message', async (message) => {
     const parsedData = JSON.parse(message.toString());
     if (parsedData.type === 'LOGIN') {
@@ -29,8 +29,13 @@ chatRouter.ws('/chat', async (ws, req) => {
       if (user) {
         activeConnection.users.push(user);
       }
-      console.log('Client connected!', parsedData.payload._id);
+      console.log('Client connected!', parsedData.payload.token);
+      console.log(activeConnection.users);
       ws.send(JSON.stringify(activeConnection));
+    }
+    if (parsedData.type === 'LOGOUT') {
+      activeConnection.users = activeConnection.users.filter(user => user.token !== parsedData.payload.token);
+      console.log(activeConnection.users);
     }
   });
   ws.on('close', () => {

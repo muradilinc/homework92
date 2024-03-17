@@ -3,6 +3,7 @@ export interface User {
   email: string;
   token: string;
   role: string;
+  displayName: string;
 }
 
 export interface ValidationError {
@@ -29,6 +30,7 @@ export interface RegisterResponse {
 export interface RegisterMutation {
   email: string;
   password: string;
+  displayName: string;
 }
 
 export interface LoginMutation {

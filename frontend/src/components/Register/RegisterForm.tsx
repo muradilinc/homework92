@@ -13,6 +13,7 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
   const [state, setState] = useState<RegisterMutation>({
     email: '',
     password: '',
+    displayName: '',
   });
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectRegisterError);
@@ -37,7 +38,7 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
   };
 
   return (
-    <div className="flex justify-center items-center h-[80vh]">
+    <div className="flex justify-center items-center h-[100vh]">
       <div className="bg-[#FAF8F4] p-[20px] box-border w-[45%] rounded-[8px]">
         <h2 className="text-center text-5xl font-bold mb-[30px]">Sign Up</h2>
         <form onSubmit={sendFormHandler} className="flex flex-col gap-y-3">
@@ -47,6 +48,14 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
             value={state.email}
             onChange={changeField}
             type="email"
+            required
+          />
+          <input
+            className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-black text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
+            name="displayName"
+            value={state.displayName}
+            onChange={changeField}
+            type="text"
             required
           />
           <input

@@ -18,7 +18,6 @@ export type UserModel = Model<UserFields, unknown, UserMethods>;
 
 export interface ActiveConnection {
   users: {
-    _id: string;
-    name: string;
+    token: string;
   }[];
 }
