@@ -10,12 +10,15 @@ export const handleWebSocketMessage = async (
   activeConnection: ActiveConnection,
 ) => {
   const parsedData = JSON.parse(message);
-  const messages = await Message.find().populate('author', 'displayName');
+  let messages = await Message.find()
+    .populate('author', 'displayName')
+    .sort({ _id: -1 })
+    .limit(30);
 
   if (parsedData.type === 'LOGIN') {
     const user: UserFields | null = await User.findOneAndUpdate(
       { token: parsedData.payload.token },
-      [{ $set: { isOnline: { $eq: [false, '$isOnline'] } } }],
+      [{ $set: { isOnline: true } }],
     );
     if (user) {
       const token = parsedData.payload.token;
@@ -63,6 +66,24 @@ export const handleWebSocketMessage = async (
         },
       };
       broadcastMessage(outgoingMsg, activeConnection);
+    }
+  } else if (parsedData.type === 'DELETE_MESSAGE') {
+    const user = await User.findOne({
+      role: parsedData.payload.role === 'admin' ? 'admin' : null,
+    });
+    if (user) {
+      await Message.findOneAndDelete({ _id: parsedData.payload._id });
+      messages = await Message.find()
+        .populate('author', 'displayName')
+        .sort({ _id: -1 })
+        .limit(30);
+      Object.values(activeConnection).forEach((connection) => {
+        connection.send(
+          JSON.stringify({ type: 'REFRESH_MESSAGE', payload: messages }),
+        );
+      });
+    } else {
+      ws.send(JSON.stringify({ type: 'NO_AUTH' }));
     }
   }
 };

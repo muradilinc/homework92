@@ -15,7 +15,7 @@ const Header: React.FC<Props>  = ({logout})=> {
 
   return (
     <div className="flex items-center justify-between border-b border-black py-[20px]">
-      <h1 className="text-green-500 font-semibold text-[20px]">We chat</h1>
+      <h1 className="text-green-500 font-semibold text-[20px]">WeChat</h1>
       <div>
         {
           user ?

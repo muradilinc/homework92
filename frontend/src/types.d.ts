@@ -38,14 +38,23 @@ export interface LoginMutation {
   password: string;
 }
 
-export interface LoginChat{
-  type: 'LOGIN';
-  payload: User;
+export interface Message {
+  _id: string;
+  author: User;
+  text: string;
 }
 
-// export interface IncomingWelcomeMessage {
-//   type: 'WELCOME';
-//   payload: string;
-// }
-//
-// export type IncomingMessage = IncomingChatMessage | IncomingWelcomeMessage;
+export interface LoginChat {
+  type: string;
+  payload: {
+    onlineUsers: User[],
+    messages: Message[],
+  };
+}
+
+export interface GetNewMessage {
+  type: 'NEW_MESSAGE';
+  payload: Message;
+}
+
+export type IncomingMessage = LoginChat | GetNewMessage;
