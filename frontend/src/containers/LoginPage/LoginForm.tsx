@@ -1,21 +1,18 @@
-import React, { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { LoginMutation } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectLoginError } from '../../store/users/usersSlice';
 import { login } from '../../store/users/usersThunk';
+import { Link, useNavigate } from 'react-router-dom';
 
-interface Props {
-  userExist: () => void;
-  sendUser: () => void;
-}
-
-const LoginForm: React.FC<Props> = ({userExist, sendUser}) => {
+const LoginForm = () => {
   const [state, setState] = useState<LoginMutation>({
     email: '',
     password: '',
   });
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectLoginError);
+  const navigate = useNavigate();
 
   const changeField = (event: ChangeEvent<HTMLInputElement>) => {
     const {name, value} = event.target;
@@ -30,7 +27,7 @@ const LoginForm: React.FC<Props> = ({userExist, sendUser}) => {
     event.preventDefault();
     try {
       await dispatch(login(state)).unwrap();
-      sendUser();
+      navigate('/');
     } catch (error) {
       console.log(error);
     }
@@ -67,9 +64,9 @@ const LoginForm: React.FC<Props> = ({userExist, sendUser}) => {
         </form>
         <p className="text-center border-t mt-[30px] py-[30px] border-gray-500">
           No account?{' '}
-          <button type="button" className="hover:text-[#1ed760]" onClick={userExist}>
-            Sign up for Spotify
-          </button>
+          <Link to={'/register'} className="hover:text-[#1ed760]" >
+            Register
+          </Link>
         </p>
       </div>
     </div>

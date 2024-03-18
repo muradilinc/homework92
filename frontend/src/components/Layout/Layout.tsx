@@ -1,11 +1,15 @@
 import React, { PropsWithChildren } from 'react';
 import Header from '../Header/Header';
 
-const Layout: React.FC<PropsWithChildren> = ({ children }) => {
+interface Props extends PropsWithChildren{
+  logout: () => void;
+}
+
+const Layout: React.FC<Props> = ({ children, logout }) => {
   return (
     <>
       <header className="container mx-auto">
-        <Header/>
+        <Header logout={logout}/>
       </header>
       <main className="container mx-auto">{children}</main>
     </>

@@ -1,15 +1,11 @@
-import React, { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { RegisterMutation } from '../../types';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectRegisterError } from '../../store/users/usersSlice';
 import { register } from '../../store/users/usersThunk';
+import { Link, useNavigate } from 'react-router-dom';
 
-interface Props {
-  userExist: () => void;
-  sendUser: () => void;
-}
-
-const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
+const RegisterForm = () => {
   const [state, setState] = useState<RegisterMutation>({
     email: '',
     password: '',
@@ -17,6 +13,7 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
   });
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectRegisterError);
+  const navigate = useNavigate();
 
   const changeField = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -31,7 +28,7 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
     event.preventDefault();
     try {
       await dispatch(register(state)).unwrap();
-      sendUser();
+      navigate('/');
     } catch (error) {
       console.log(error);
     }
@@ -73,7 +70,7 @@ const RegisterForm: React.FC<Props> = ({userExist, sendUser}) => {
           >
             sign up
           </button>
-          <button onClick={userExist}>i have acc</button>
+          <Link to={'/register'}>i have acc</Link>
         </form>
       </div>
     </div>
