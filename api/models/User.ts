@@ -42,6 +42,10 @@ const userSchema = new Schema<UserFields, UserModel, UserMethods>({
     required: true,
   },
   displayName: String,
+  isOnline: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.methods.checkPassword = function (password: string) {

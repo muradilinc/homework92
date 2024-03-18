@@ -10,7 +10,7 @@ const HomePage = () => {
   const user = useAppSelector(selectUser);
   const ws = useRef<WebSocket | null>(null);
   const dispatch = useAppDispatch();
-  const [users, setUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<{ author: User, text: string }[]>([]);
@@ -22,16 +22,21 @@ const HomePage = () => {
   }, [navigate, user]);
 
   useEffect(() => {
+    console.log('sdfnsjdfn');
     ws.current = new WebSocket('ws://localhost:8000/chat');
     ws.current.addEventListener('close', () => console.log('close'));
     ws.current.addEventListener('message', (event) => {
       const decodedMessage = JSON.parse(event.data);
       if (decodedMessage.type === 'USERS') {
-        setUsers(prevState => [...prevState, decodedMessage.payload.onlineUsers]);
+        setUsers(decodedMessage.payload.onlineUsers);
         setMessages(decodedMessage.payload.messages);
       }
       if (decodedMessage.type === 'NEW_MESSAGE') {
-        setMessages(prevState => [...prevState, decodedMessage.payload]);
+        setMessages(decodedMessage.payload);
+      }
+
+      if (decodedMessage.type === 'WELCOME') {
+        loginInChat();
       }
     });
 
@@ -41,21 +46,6 @@ const HomePage = () => {
       }
     };
   }, []);
-
-  console.log(messages);
-
-  console.log(user);
-
-  // useEffect(() => {
-  //   if (user && ws.current?.readyState === WebSocket.OPEN ) {
-  //     ws.current.send(JSON.stringify({
-  //       type: 'LOGIN',
-  //       payload: {
-  //         token: user?.token
-  //       },
-  //     }));
-  //   }
-  // }, [user]);
 
   const loginInChat = () => {
     if (ws.current) {
@@ -102,7 +92,7 @@ const HomePage = () => {
             <div>
               {
                 users ?
-                  users.map((user, index) => <p key={index}>{user}</p>)
+                  users.map((user) => <p key={user._id}>{user.displayName}</p>)
                   :
                   null
               }
