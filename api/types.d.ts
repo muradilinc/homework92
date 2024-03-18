@@ -1,5 +1,5 @@
-import {Model} from "mongoose";
-import {WebSocket} from 'ws';
+import { Model } from 'mongoose';
+import { WebSocket } from 'ws';
 
 export interface UserFields {
   email: string;
@@ -21,7 +21,26 @@ export interface ActiveConnection {
   [token: string]: WebSocket;
 }
 
-export interface IncomingMessage {
+export interface IncomingToken {
   type: string;
-  payload: string;
+  payload: {
+    token: string;
+  };
+}
+
+export interface IncomingText {
+  type: string;
+  payload: {
+    text: string;
+  };
+}
+
+export type IncomingMessage = IncomingToken | IncomingMessage;
+
+export interface BroadcastMessage {
+  type: string;
+  payload: {
+    author: UserFields;
+    text: string;
+  };
 }

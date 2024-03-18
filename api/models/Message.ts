@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import User from "./User";
+import mongoose from 'mongoose';
+import User from './User';
 
 const Schema = mongoose.Schema;
 
@@ -18,7 +18,7 @@ const messageSchema = new Schema({
   text: {
     type: String,
     required: true,
-  }
+  },
 });
 
 const Message = mongoose.model('Message', messageSchema);

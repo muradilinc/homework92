@@ -1,13 +1,13 @@
 import express from 'express';
 import expressWs from 'express-ws';
-import mongoose from "mongoose";
-import config from "./config";
+import mongoose from 'mongoose';
+import config from './config';
 import cors from 'cors';
-import usersRouter from "./routes/users";
-import User from "./models/User";
-import {ActiveConnection, UserFields, UserModel} from "./types";
-import Message from "./models/Message";
-import {broadcastMessage} from "./helpers/broadcastMessage";
+import usersRouter from './routes/users';
+import User from './models/User';
+import { ActiveConnection, BroadcastMessage, IncomingMessage } from './types';
+import Message from './models/Message';
+import { broadcastMessage } from './helpers/broadcastMessage';
 
 const app = express();
 expressWs(app);
@@ -23,38 +23,55 @@ const activeConnection: ActiveConnection = {};
 
 chatRouter.ws('/chat', async (ws, _req) => {
   let user;
-  ws.send(JSON.stringify({type: 'WELCOME', payload: 'You have connected to the chat!'}));
+  ws.send(
+    JSON.stringify({
+      type: 'WELCOME',
+      payload: 'You have connected to the chat!',
+    }),
+  );
   ws.on('message', async (message) => {
-    const parsedData = JSON.parse(message.toString());
+    const parsedData = JSON.parse(message.toString()) as IncomingMessage;
     if (parsedData.type === 'LOGIN') {
-      user = await User.findOneAndUpdate({token: parsedData.payload.token}, [{$set: {isOnline: {$eq: [false, '$isOnline']}}}]);
+      user = await User.findOneAndUpdate({ token: parsedData.payload.token }, [
+        { $set: { isOnline: { $eq: [false, '$isOnline'] } } },
+      ]);
       const messages = await Message.find().populate('author', 'displayName');
       if (user) {
         const token = parsedData.payload.token;
         activeConnection[token] = ws;
       }
-      const onlineUsers = await User.find({isOnline: true}, {displayName: 1});
+      const onlineUsers = await User.find(
+        { isOnline: true },
+        { displayName: 1 },
+      );
       console.log('Client connected!', parsedData.payload.token);
-      ws.send(JSON.stringify({type: 'USERS', payload: {onlineUsers, messages}}));
+      ws.send(
+        JSON.stringify({ type: 'USERS', payload: { onlineUsers, messages } }),
+      );
     }
     if (parsedData.type === 'LOGOUT') {
       const token = parsedData.payload.token;
       delete activeConnection[token];
+      await User.findOneAndUpdate({ token }, { $set: { isOnline: false } });
     }
     if (parsedData.type === 'SEND_MESSAGE') {
-      const user = await User.findOne({token: parsedData.payload.token});
-      const message = new Message({
-        author: user?._id,
-        text: parsedData.payload.text,
-      });
-      await message.save();
-      const outgoingMsg = {
-        type: 'NEW_MESSAGE', payload: {
-          author: user,
+      const user = await User.findOne({ token: parsedData.payload.token });
+      if (user) {
+        const message = new Message({
+          author: user._id,
           text: parsedData.payload.text,
-        }
-      };
-      broadcastMessage(outgoingMsg, activeConnection);
+        });
+        await message.save();
+
+        const outgoingMsg: BroadcastMessage = {
+          type: 'NEW_MESSAGE',
+          payload: {
+            author: user,
+            text: parsedData.payload.text,
+          },
+        };
+        broadcastMessage(outgoingMsg, activeConnection);
+      }
     }
   });
   ws.on('close', () => {
