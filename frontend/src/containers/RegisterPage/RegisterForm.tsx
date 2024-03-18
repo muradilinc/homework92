@@ -38,13 +38,14 @@ const RegisterForm = () => {
     <div className="flex justify-center items-center h-[100vh]">
       <div className="bg-[#FAF8F4] p-[20px] box-border w-[45%] rounded-[8px]">
         <h2 className="text-center text-5xl font-bold mb-[30px]">Sign Up</h2>
-        <form onSubmit={sendFormHandler} className="flex flex-col gap-y-3">
+        <form onSubmit={sendFormHandler} className="flex text-center flex-col gap-y-3">
           <input
             className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-black text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
             name="email"
             value={state.email}
             onChange={changeField}
             type="email"
+            placeholder="Email"
             required
           />
           <input
@@ -53,6 +54,7 @@ const RegisterForm = () => {
             value={state.displayName}
             onChange={changeField}
             type="text"
+            placeholder="Nickname"
             required
           />
           <input
@@ -61,16 +63,17 @@ const RegisterForm = () => {
             value={state.password}
             onChange={changeField}
             type="password"
+            placeholder="Password"
             required
           />
           {error && <p className="text-red-500 text-sm">{error.message}</p>}
           <button
-            className="bg-[#1ed760] rounded-[30px] text-base font-bold py-[8px] text-black capitalize"
+            className="bg-[#1ed760] rounded-[30px] text-base text-white font-bold py-[8px] capitalize"
             type="submit"
           >
             sign up
           </button>
-          <Link to={'/register'}>i have acc</Link>
+          <Link className="hover:text-[#1ed760]" to={'/login'}>i have acc</Link>
         </form>
       </div>
     </div>

@@ -4,10 +4,11 @@ import mongoose from 'mongoose';
 import config from './config';
 import cors from 'cors';
 import usersRouter from './routes/users';
-import User from './models/User';
-import { ActiveConnection, BroadcastMessage, IncomingMessage } from './types';
-import Message from './models/Message';
-import { broadcastMessage } from './helpers/broadcastMessage';
+import { ActiveConnection, UserFields } from './types';
+import {
+  handleWebSocketClose,
+  handleWebSocketMessage,
+} from './helpers/websocketHelper';
 
 const app = express();
 expressWs(app);
@@ -22,7 +23,7 @@ const chatRouter = express.Router();
 const activeConnection: ActiveConnection = {};
 
 chatRouter.ws('/chat', async (ws, _req) => {
-  let user;
+  let user: UserFields;
   ws.send(
     JSON.stringify({
       type: 'WELCOME',
@@ -30,52 +31,12 @@ chatRouter.ws('/chat', async (ws, _req) => {
     }),
   );
   ws.on('message', async (message) => {
-    const parsedData = JSON.parse(message.toString()) as IncomingMessage;
-    if (parsedData.type === 'LOGIN') {
-      user = await User.findOneAndUpdate({ token: parsedData.payload.token }, [
-        { $set: { isOnline: { $eq: [false, '$isOnline'] } } },
-      ]);
-      const messages = await Message.find().populate('author', 'displayName');
-      if (user) {
-        const token = parsedData.payload.token;
-        activeConnection[token] = ws;
-      }
-      const onlineUsers = await User.find(
-        { isOnline: true },
-        { displayName: 1 },
-      );
-      console.log('Client connected!', parsedData.payload.token);
-      ws.send(
-        JSON.stringify({ type: 'USERS', payload: { onlineUsers, messages } }),
-      );
-    }
-    if (parsedData.type === 'LOGOUT') {
-      const token = parsedData.payload.token;
-      delete activeConnection[token];
-      await User.findOneAndUpdate({ token }, { $set: { isOnline: false } });
-    }
-    if (parsedData.type === 'SEND_MESSAGE') {
-      const user = await User.findOne({ token: parsedData.payload.token });
-      if (user) {
-        const message = new Message({
-          author: user._id,
-          text: parsedData.payload.text,
-        });
-        await message.save();
-
-        const outgoingMsg: BroadcastMessage = {
-          type: 'NEW_MESSAGE',
-          payload: {
-            author: user,
-            text: parsedData.payload.text,
-          },
-        };
-        broadcastMessage(outgoingMsg, activeConnection);
-      }
-    }
+    await handleWebSocketMessage(ws, message.toString(), activeConnection);
   });
   ws.on('close', () => {
-    console.log('Client disconnected!');
+    if (user) {
+      handleWebSocketClose(activeConnection, user.token);
+    }
   });
 });
 
