@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Layout from '../../components/Layout/Layout';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../store/users/usersSlice';
-import { User } from '../../types';
 import { logout } from '../../store/users/usersThunk';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,8 +9,10 @@ const HomePage = () => {
   const user = useAppSelector(selectUser);
   const ws = useRef<WebSocket | null>(null);
   const dispatch = useAppDispatch();
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [text, setText] = useState('');
+  const [messages, setMessages] = useState<{ username: string, message: string }[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -24,7 +25,12 @@ const HomePage = () => {
     ws.current.addEventListener('close', () => console.log('close'));
     ws.current.addEventListener('message', (event) => {
       const decodedMessage = JSON.parse(event.data);
-      setUsers(decodedMessage.users);
+      if (decodedMessage.type === 'USERS') {
+        setUsers(decodedMessage.payload);
+      }
+      if (decodedMessage.type === 'NEW_MESSAGE') {
+        setMessages(prevState => [...prevState, decodedMessage.payload]);
+      }
     });
 
     return () => {
@@ -34,19 +40,10 @@ const HomePage = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (!ws.current) return;
-  //
-  //   ws.current.send(JSON.stringify({
-  //     type: 'LOGIN',
-  //     payload: {
-  //       token: user?.token
-  //     },
-  //   }));
-  // }, [user]);
+  console.log(user);
 
-  // const loginInChat = () => {
-  //   if (ws.current) {
+  // useEffect(() => {
+  //   if (user && ws.current?.readyState === WebSocket.OPEN ) {
   //     ws.current.send(JSON.stringify({
   //       type: 'LOGIN',
   //       payload: {
@@ -54,7 +51,18 @@ const HomePage = () => {
   //       },
   //     }));
   //   }
-  // };
+  // }, [user]);
+
+  const loginInChat = () => {
+    if (ws.current) {
+      ws.current.send(JSON.stringify({
+        type: 'LOGIN',
+        payload: {
+          token: user?.token
+        },
+      }));
+    }
+  };
 
   const logoutHandle = async () => {
     if (ws.current) {
@@ -68,23 +76,46 @@ const HomePage = () => {
     await dispatch(logout()).unwrap();
   };
 
+  const sendMessage = (event: FormEvent) => {
+    event.preventDefault();
+    if (!ws.current) return;
+
+    ws.current.send(JSON.stringify({
+      type: 'SEND_MESSAGE',
+      payload: {
+        token: user?.token,
+        text,
+      },
+    }));
+  };
+
   return (
     <Layout logout={() => logoutHandle()}>
       <div>
-        <div className="flex ">
-          <div className="border border-black">
+        <div className="flex justify-between gap-x-3 my-[10px]">
+          <div className="border w-[20%] border-black px-[10px] py-[5px]">
             <h4>Online users</h4>
             <div>
               {
                 users ?
-                  users.map(user => <p key={user._id}>{user.displayName}</p>)
+                  users.map((user, index) => <p key={index}>{user}</p>)
                   :
                   null
               }
             </div>
           </div>
-          <div className="border border-black">
-            <h1>message</h1>
+          <div className="border border-black w-[80%]">
+            <div>
+              {
+                messages.map(message => <p><strong>{message.username}</strong>{message.message}</p>)
+              }
+              <button onClick={loginInChat}>login</button>
+            </div>
+            <form onSubmit={sendMessage}>
+              <input type="text" value={text}
+                     onChange={(event: ChangeEvent<HTMLInputElement>) => setText(event.target.value)}/>
+              <button type="submit" className="bg-green-400 px-[10px] py-[5px] rounded-[5px] text-white">send</button>
+            </form>
           </div>
         </div>
       </div>

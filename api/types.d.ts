@@ -1,12 +1,12 @@
+import {Model} from "mongoose";
+import {WebSocket} from 'ws';
+
 export interface UserFields {
   email: string;
   password: string;
   token: string;
   role: string;
-  displayName?: string;
-  googleID?: string;
-  githubID?: string;
-  avatar?: string;
+  displayName: string;
 }
 
 export interface UserMethods {
@@ -17,7 +17,5 @@ export interface UserMethods {
 export type UserModel = Model<UserFields, unknown, UserMethods>;
 
 export interface ActiveConnection {
-  users: {
-    token: string;
-  }[];
+  [token: string]: WebSocket;
 }

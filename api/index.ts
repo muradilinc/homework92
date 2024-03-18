@@ -5,7 +5,7 @@ import config from "./config";
 import cors from 'cors';
 import usersRouter from "./routes/users";
 import User from "./models/User";
-import {ActiveConnection, UserModel} from "./types";
+import {ActiveConnection, UserFields, UserModel} from "./types";
 
 const app = express();
 expressWs(app);
@@ -15,10 +15,10 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/users', usersRouter);
+
 const chatRouter = express.Router();
-const activeConnection: ActiveConnection = {
-  users: [],
-};
+const activeConnection: ActiveConnection = {};
+const onlineUsers: string[] = [];
 
 chatRouter.ws('/chat', async (ws, req) => {
   ws.send(JSON.stringify({type: 'WELCOME', payload: 'You have connected to the chat!'}));
@@ -27,15 +27,27 @@ chatRouter.ws('/chat', async (ws, req) => {
     if (parsedData.type === 'LOGIN') {
       const user = await User.findOne({token: parsedData.payload.token});
       if (user) {
-        activeConnection.users.push(user);
+        const token = parsedData.payload.token;
+        activeConnection[token] = ws;
+        onlineUsers.push(user.displayName);
       }
       console.log('Client connected!', parsedData.payload.token);
-      console.log(activeConnection.users);
-      ws.send(JSON.stringify(activeConnection));
+      console.log(onlineUsers);
+      ws.send(JSON.stringify({type: 'USERS', payload: onlineUsers}));
     }
     if (parsedData.type === 'LOGOUT') {
-      activeConnection.users = activeConnection.users.filter(user => user.token !== parsedData.payload.token);
-      console.log(activeConnection.users);
+      const token = parsedData.payload.token;
+      delete activeConnection[token];
+    }
+    if (parsedData.type === 'SEND_MESSAGE') {
+      const user = await User.findOne({token: parsedData.payload.token});
+      Object.values(activeConnection).forEach(connection => {
+        const outgoingMsg = {type: 'NEW_MESSAGE', payload: {
+            username: user?.displayName,
+            message: parsedData.payload.text
+          }};
+        connection.send(JSON.stringify(outgoingMsg));
+      });
     }
   });
   ws.on('close', () => {
