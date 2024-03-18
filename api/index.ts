@@ -7,6 +7,7 @@ import usersRouter from "./routes/users";
 import User from "./models/User";
 import {ActiveConnection, UserFields, UserModel} from "./types";
 import Message from "./models/Message";
+import {broadcastMessage} from "./helpers/broadcastMessage";
 
 const app = express();
 expressWs(app);
@@ -47,15 +48,13 @@ chatRouter.ws('/chat', async (ws, _req) => {
         text: parsedData.payload.text,
       });
       await message.save();
-      Object.values(activeConnection).forEach(connection => {
-        const outgoingMsg = {
-          type: 'NEW_MESSAGE', payload: {
-            author: user?.displayName,
-            text: parsedData.payload.text,
-          }
-        };
-        connection.send(JSON.stringify(outgoingMsg));
-      });
+      const outgoingMsg = {
+        type: 'NEW_MESSAGE', payload: {
+          author: user,
+          text: parsedData.payload.text,
+        }
+      };
+      broadcastMessage(outgoingMsg, activeConnection);
     }
   });
   ws.on('close', () => {

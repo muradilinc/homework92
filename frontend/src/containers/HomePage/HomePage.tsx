@@ -14,6 +14,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<{ author: User, text: string }[]>([]);
+  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -22,9 +23,15 @@ const HomePage = () => {
   }, [navigate, user]);
 
   useEffect(() => {
-    console.log('sdfnsjdfn');
     ws.current = new WebSocket('ws://localhost:8000/chat');
-    ws.current.addEventListener('close', () => console.log('close'));
+    ws.current.addEventListener('close', () => {
+      if (waitingToReconnect) {
+        return;
+      }
+      console.log('close');
+      setWaitingToReconnect(true);
+      setTimeout(() => setWaitingToReconnect(null), 3000);
+    });
     ws.current.addEventListener('message', (event) => {
       const decodedMessage = JSON.parse(event.data);
       if (decodedMessage.type === 'USERS') {
@@ -32,11 +39,18 @@ const HomePage = () => {
         setMessages(decodedMessage.payload.messages);
       }
       if (decodedMessage.type === 'NEW_MESSAGE') {
-        setMessages(decodedMessage.payload);
+        setMessages(prevState => [...prevState, decodedMessage.payload]);
       }
 
       if (decodedMessage.type === 'WELCOME') {
-        loginInChat();
+        if (ws.current) {
+          ws.current.send(JSON.stringify({
+            type: 'LOGIN',
+            payload: {
+              token: user?.token
+            },
+          }));
+        }
       }
     });
 
@@ -45,18 +59,9 @@ const HomePage = () => {
         ws.current.close();
       }
     };
-  }, []);
+  }, [user?.token, waitingToReconnect]);
 
-  const loginInChat = () => {
-    if (ws.current) {
-      ws.current.send(JSON.stringify({
-        type: 'LOGIN',
-        payload: {
-          token: user?.token
-        },
-      }));
-    }
-  };
+  console.log(waitingToReconnect);
 
   const logoutHandle = async () => {
     if (ws.current) {
@@ -101,9 +106,9 @@ const HomePage = () => {
           <div className="border border-black w-[80%]">
             <div>
               {
-                messages.map(message => <p><strong>{message.author?.displayName}</strong>{message.text}</p>)
+                messages.map((message, index) => <p key={index}>
+                  <strong>{message.author?.displayName}</strong>{message.text}</p>)
               }
-              <button onClick={loginInChat}>login</button>
             </div>
             <form onSubmit={sendMessage}>
               <input type="text" value={text}

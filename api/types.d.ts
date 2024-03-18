@@ -20,3 +20,8 @@ export type UserModel = Model<UserFields, unknown, UserMethods>;
 export interface ActiveConnection {
   [token: string]: WebSocket;
 }
+
+export interface IncomingMessage {
+  type: string;
+  payload: string;
+}
