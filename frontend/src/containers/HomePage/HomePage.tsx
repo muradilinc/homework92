@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../store/users/usersSlice';
 import { logout } from '../../store/users/usersThunk';
 import { useNavigate } from 'react-router-dom';
+import { User } from '../../types';
 
 const HomePage = () => {
   const user = useAppSelector(selectUser);
@@ -12,7 +13,7 @@ const HomePage = () => {
   const [users, setUsers] = useState<string[]>([]);
   const navigate = useNavigate();
   const [text, setText] = useState('');
-  const [messages, setMessages] = useState<{ username: string, message: string }[]>([]);
+  const [messages, setMessages] = useState<{ author: User, text: string }[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -26,7 +27,8 @@ const HomePage = () => {
     ws.current.addEventListener('message', (event) => {
       const decodedMessage = JSON.parse(event.data);
       if (decodedMessage.type === 'USERS') {
-        setUsers(decodedMessage.payload);
+        setUsers(prevState => [...prevState, decodedMessage.payload.onlineUsers]);
+        setMessages(decodedMessage.payload.messages);
       }
       if (decodedMessage.type === 'NEW_MESSAGE') {
         setMessages(prevState => [...prevState, decodedMessage.payload]);
@@ -39,6 +41,8 @@ const HomePage = () => {
       }
     };
   }, []);
+
+  console.log(messages);
 
   console.log(user);
 
@@ -107,7 +111,7 @@ const HomePage = () => {
           <div className="border border-black w-[80%]">
             <div>
               {
-                messages.map(message => <p><strong>{message.username}</strong>{message.message}</p>)
+                messages.map(message => <p><strong>{message.author?.displayName}</strong>{message.text}</p>)
               }
               <button onClick={loginInChat}>login</button>
             </div>

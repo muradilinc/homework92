@@ -5,7 +5,8 @@ import config from "./config";
 import cors from 'cors';
 import usersRouter from "./routes/users";
 import User from "./models/User";
-import {ActiveConnection, UserFields, UserModel} from "./types";
+import {ActiveConnection} from "./types";
+import Message from "./models/Message";
 
 const app = express();
 expressWs(app);
@@ -26,14 +27,14 @@ chatRouter.ws('/chat', async (ws, req) => {
     const parsedData = JSON.parse(message.toString());
     if (parsedData.type === 'LOGIN') {
       const user = await User.findOne({token: parsedData.payload.token});
+      const messages = await Message.find().populate('author', 'displayName');
       if (user) {
         const token = parsedData.payload.token;
         activeConnection[token] = ws;
-        onlineUsers.push(user.displayName);
+        onlineUsers.push(user.displayName ? user.displayName : '');
       }
       console.log('Client connected!', parsedData.payload.token);
-      console.log(onlineUsers);
-      ws.send(JSON.stringify({type: 'USERS', payload: onlineUsers}));
+      ws.send(JSON.stringify({type: 'USERS', payload: {onlineUsers, messages}}));
     }
     if (parsedData.type === 'LOGOUT') {
       const token = parsedData.payload.token;
@@ -41,11 +42,13 @@ chatRouter.ws('/chat', async (ws, req) => {
     }
     if (parsedData.type === 'SEND_MESSAGE') {
       const user = await User.findOne({token: parsedData.payload.token});
+      const message = new Message({
+        author: user?._id,
+        text: parsedData.payload.text,
+      });
+      await message.save();
       Object.values(activeConnection).forEach(connection => {
-        const outgoingMsg = {type: 'NEW_MESSAGE', payload: {
-            username: user?.displayName,
-            message: parsedData.payload.text
-          }};
+        const outgoingMsg = {type: 'NEW_MESSAGE', payload: message};
         connection.send(JSON.stringify(outgoingMsg));
       });
     }

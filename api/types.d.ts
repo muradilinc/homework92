@@ -6,7 +6,7 @@ export interface UserFields {
   password: string;
   token: string;
   role: string;
-  displayName: string;
+  displayName?: string;
 }
 
 export interface UserMethods {
