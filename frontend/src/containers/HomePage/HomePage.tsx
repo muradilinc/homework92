@@ -208,7 +208,11 @@ const HomePage = () => {
                     message.author._id === user?._id ? (
                       <div
                         key={message._id}
-                        className="p-[10px] w-fit flex gap-x-5 bg-green-400 rounded-[5px]"
+                        className={
+                          message.author._id === user?._id
+                            ? 'bg-blue-400 p-[10px] w-fit flex gap-x-5 rounded-[5px] text-white'
+                            : 'bg-green-400 p-[10px] w-fit flex gap-x-5 rounded-[5px] text-white'
+                        }
                       >
                         <p>
                           <strong>{message.author.displayName}:</strong>{' '}
