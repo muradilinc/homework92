@@ -1,0 +1,10 @@
+node_modules
+public
+.eslintrc.cjs
+.editorconfig
+.gitignore
+package-lock.json
+package.json
+README.md
+tsconfig.json
+tsconfig.node.json

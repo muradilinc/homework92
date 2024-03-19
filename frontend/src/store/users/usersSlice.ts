@@ -52,11 +52,11 @@ const usersSlice = createSlice({
       state.loginLoading = true;
       state.loginError = error || null;
     });
-  }
+  },
 });
 
 export const usersReducer = usersSlice.reducer;
-export const {logoutState} = usersSlice.actions;
+export const { logoutState } = usersSlice.actions;
 export const selectUser = (state: RootState) => state.users.user;
 export const selectRegisterLoading = (state: RootState) =>
   state.users.registerLoading;

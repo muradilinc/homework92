@@ -9,6 +9,7 @@ import {
   handleWebSocketClose,
   handleWebSocketMessage,
 } from './helpers/websocketHelper';
+import User from './models/User';
 
 const app = express();
 expressWs(app);
@@ -23,7 +24,7 @@ const chatRouter = express.Router();
 const activeConnection: ActiveConnection = {};
 
 chatRouter.ws('/chat', async (ws, _req) => {
-  let user: UserFields;
+  let user: UserFields | null;
   ws.send(
     JSON.stringify({
       type: 'WELCOME',
@@ -32,6 +33,10 @@ chatRouter.ws('/chat', async (ws, _req) => {
   );
   ws.on('message', async (message) => {
     await handleWebSocketMessage(ws, message.toString(), activeConnection);
+    const messageData = JSON.parse(message.toString());
+    if (messageData.type === 'LOGIN') {
+      user = await User.findOne({ token: messageData.payload.token });
+    }
   });
   ws.on('close', () => {
     if (user) {

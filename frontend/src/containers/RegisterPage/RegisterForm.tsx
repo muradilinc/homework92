@@ -38,7 +38,10 @@ const RegisterForm = () => {
     <div className="flex justify-center items-center h-[100vh]">
       <div className="bg-[#FAF8F4] p-[20px] box-border w-[45%] rounded-[8px]">
         <h2 className="text-center text-5xl font-bold mb-[30px]">Sign Up</h2>
-        <form onSubmit={sendFormHandler} className="flex text-center flex-col gap-y-3">
+        <form
+          onSubmit={sendFormHandler}
+          className="flex text-center flex-col gap-y-3"
+        >
           <input
             className="bg-gray-50 bg-inherit outline-0 border border-gray-300 text-black text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-white dark:focus:border-white"
             name="email"
@@ -73,7 +76,9 @@ const RegisterForm = () => {
           >
             sign up
           </button>
-          <Link className="hover:text-[#1ed760]" to={'/login'}>i have acc</Link>
+          <Link className="hover:text-[#1ed760]" to={'/login'}>
+            i have acc
+          </Link>
         </form>
       </div>
     </div>

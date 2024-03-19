@@ -12,12 +12,24 @@ const messageSchema = new Schema({
         const artists = await User.findById(value);
         return Boolean(artists);
       },
-      message: 'Artist does not exist!',
+      message: 'User does not exist!',
     },
   },
   text: {
     type: String,
     required: true,
+  },
+  receiver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
+    validate: {
+      validator: async (value: mongoose.Types.ObjectId) => {
+        const artists = await User.findById(value);
+        return Boolean(artists);
+      },
+      message: 'User does not exist!',
+    },
   },
 });
 

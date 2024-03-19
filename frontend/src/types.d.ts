@@ -42,13 +42,14 @@ export interface Message {
   _id: string;
   author: User;
   text: string;
+  receiver?: string;
 }
 
 export interface LoginChat {
   type: string;
   payload: {
-    onlineUsers: User[],
-    messages: Message[],
+    onlineUsers: User[];
+    messages: Message[];
   };
 }
 

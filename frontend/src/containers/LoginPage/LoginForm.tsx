@@ -15,7 +15,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
 
   const changeField = (event: ChangeEvent<HTMLInputElement>) => {
-    const {name, value} = event.target;
+    const { name, value } = event.target;
 
     setState((prevState) => ({
       ...prevState,
@@ -66,7 +66,7 @@ const LoginForm = () => {
         </form>
         <p className="text-center border-t mt-[30px] py-[30px] border-gray-500">
           No account?{' '}
-          <Link to={'/register'} className="hover:text-[#1ed760]" >
+          <Link to={'/register'} className="hover:text-[#1ed760]">
             Register
           </Link>
         </p>

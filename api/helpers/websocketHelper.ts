@@ -85,12 +85,44 @@ export const handleWebSocketMessage = async (
     } else {
       ws.send(JSON.stringify({ type: 'NO_AUTH' }));
     }
+  } else if (parsedData.type === 'PERSONAL_MESSAGE') {
+    const user: UserFields | null = await User.findOne({
+      token: parsedData.payload.token,
+    });
+    if (user) {
+      const message = new Message({
+        author: user._id,
+        text: parsedData.payload.text,
+        receiver: parsedData.payload.receiver,
+      });
+      await message.save();
+
+      const outgoingMsg = {
+        type: 'NEW_MESSAGE',
+        payload: {
+          author: user,
+          text: parsedData.payload.text,
+          receiver: parsedData.payload.receiver,
+        },
+      };
+      broadcastMessage(outgoingMsg, activeConnection);
+    }
   }
 };
 
-export const handleWebSocketClose = (
+export const handleWebSocketClose = async (
   activeConnection: ActiveConnection,
   token: string,
 ) => {
   delete activeConnection[token];
+  await User.findOneAndUpdate({ token }, { $set: { isOnline: false } });
+  const onlineUsers: UserFields[] = await User.find(
+    { isOnline: true },
+    { displayName: 1 },
+  );
+  Object.values(activeConnection).forEach((connection) => {
+    connection.send(
+      JSON.stringify({ type: 'REFRESH_USERS', payload: { onlineUsers } }),
+    );
+  });
 };

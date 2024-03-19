@@ -15,7 +15,7 @@ export const register = createAsyncThunk<
   RegisterResponse,
   RegisterMutation,
   { rejectValue: ValidationError }
->('users/register', async (registerMutation, {rejectWithValue}) => {
+>('users/register', async (registerMutation, { rejectWithValue }) => {
   try {
     const response = await axiosApi.post<RegisterResponse>(
       '/users',
@@ -39,7 +39,7 @@ export const login = createAsyncThunk<
   RegisterResponse,
   LoginMutation,
   { rejectValue: GlobalError }
->('users/login', async (loginMutation, {rejectWithValue}) => {
+>('users/login', async (loginMutation, { rejectWithValue }) => {
   try {
     const response = await axiosApi.post<RegisterResponse>(
       '/users/sessions',
@@ -61,7 +61,7 @@ export const login = createAsyncThunk<
 
 export const logout = createAsyncThunk<void, undefined, { state: RootState }>(
   'users/logout',
-  async (_, {dispatch}) => {
+  async (_, { dispatch }) => {
     await axiosApi.delete('/users/sessions');
     dispatch(logoutState());
   },
